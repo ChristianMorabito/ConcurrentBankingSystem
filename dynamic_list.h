@@ -10,6 +10,9 @@ typedef struct{
 }ListHead;
 
 ListHead* createList();
+
 int append(ListHead* head, void* data);
+
+void memoryFailExit();
 
 #endif //DYNAMIC_LIST_H

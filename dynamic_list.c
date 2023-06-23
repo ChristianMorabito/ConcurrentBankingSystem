@@ -37,3 +37,8 @@ int append(ListHead* head, void* data){
 
     return 0;
 }
+
+void memoryFailExit(){
+    puts("Memory failed! Exiting");
+    exit(-1);
+}
