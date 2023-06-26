@@ -10,7 +10,7 @@ int main() {
 
     // Perform deposits
     deposit(account1, 1000);
-    deposit(account2, 2000);
+//    deposit(account2, 2000);
 //    deposit(account3, 3000);
 //    deposit(account3, 3000);
 
@@ -19,7 +19,7 @@ int main() {
 //    withdraw(account2, 800);
 //    withdraw(account3, 1200);
 //    withdraw(account3, 2900);
-//
+
 //    // Show balances
 //    printf("Balance of account 1: %d\n", getBalance(account1));
 //    printf("Balance of account 2: %d\n", getBalance(account2));

@@ -24,4 +24,6 @@ int initialiseThread();
 
 void programExit();
 
+int* mallocInt();
+
 #endif //ACCOUNT_H
