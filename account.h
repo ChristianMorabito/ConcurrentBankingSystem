@@ -12,18 +12,30 @@ int initialiseAccount();
 
 int deposit(int account, int amount);
 
-void withdraw(int account, int amount);
+int withdraw(int account, int amount);
+
+void* threadWithdraw(void* voidArg);
 
 int getBalance(int account);
 
-void* threadDeposit(void* amount);
+void* threadGetBalance(void* voidArg);
 
-void printAccount(int account);
+void* threadDeposit(void* voidArg);
 
 int initialiseThread();
 
 void programExit();
 
+void freeAccounts(int* account);
+
+void freeThreads(pthread_t* thread);
+
+void threadCreateFail();
+
+void threadJoinFail();
+
 int* mallocInt();
+
+void initLists();
 
 #endif //ACCOUNT_H

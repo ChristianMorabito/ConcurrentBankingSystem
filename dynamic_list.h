@@ -9,6 +9,8 @@ typedef struct{
     void** data;
 }ListHead;
 
+void freeList(ListHead** head, void (freeData)(void* data));
+
 ListHead* createList();
 
 int append(ListHead* head, void* data);

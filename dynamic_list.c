@@ -1,7 +1,14 @@
 #include "dynamic_list.h"
 #include <stdio.h>
 
-
+void freeList(ListHead** head, void (freeData)(void* data)){
+    int filled = *(int* )(*head)->filled;
+    for (int i = 0; i < filled; i++){
+        freeData((*head)->data[0]);
+    }
+    free((*head)->data);
+    free(*head);
+}
 ListHead* createList(){
     ListHead* head = malloc(sizeof(ListHead));
     if (!head){

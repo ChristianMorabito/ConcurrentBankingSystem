@@ -2,8 +2,8 @@
 #include "dynamic_list.h"
 #include <pthread.h>
 #include <stdio.h>
+#include <unistd.h>
 
-pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 ListHead* accountList = NULL;
 ListHead* threadList = NULL;
 
@@ -14,14 +14,19 @@ int* mallocInt(){
     return amount;
 }
 
-int initialiseAccount(){
+void initLists(){
     if (!accountList){
         accountList = createList(); // create account list.
         threadList = createList(); // create thread list
     }
-    if (!accountList || !threadList) memoryFailExit(); // force exit if malloc fails
-    int* amount = mallocInt();
+    if (!accountList) memoryFailExit(); // force exit if malloc fails
+
+}
+
+int initialiseAccount(){
+    initLists(); // create x2 lists. one to hold accounts & another to hold threads.
     int identifier = (int)accountList->filled; // this is the account ID to be returned
+    int* amount = mallocInt(); // create memory to hold account balance. This will be attached to the accountList
     int accountStatus = append(accountList, amount); // append account to dynamic list
     if (accountStatus == -1) memoryFailExit();
     initialiseThread();
@@ -37,48 +42,75 @@ int initialiseThread(){
 }
 
 int deposit(int account, int amount){
-
-    // check if account number is in a valid range
-    if (account < 0 || account > accountList->filled - 1) return -1;
-//    pthread_mutex_lock(&lock); // lock
-    AccountAmount* argPtr = malloc(sizeof(AccountAmount));
-    AccountAmount arg = {account, amount};
-    argPtr = &arg;
-    pthread_create(threadList->data[account], NULL, threadDeposit, &argPtr);
-//    pthread_join((pthread_t)threadList->data[account],NULL); //TODO: do safety return
-//    pthread_mutex_unlock(&lock); // unlock
-    return 0; //TODO: do safety return
+    pthread_t* thread = threadList->data[account];
+    if (account < 0 || account > accountList->filled - 1) return -1; // check if account number is in a valid range
+    AccountAmount arg = {account, amount}; // create struct to pass as function argument ( in pthread_create() )
+    if (pthread_create(thread, NULL, threadDeposit, &arg)) threadCreateFail();
+    if (pthread_join(*thread, NULL)) threadJoinFail();
+    return 0;
 }
 
 void* threadDeposit(void* voidArg){
-    AccountAmount* arg = voidArg;
+    AccountAmount* arg = voidArg; // typecast voidArg back to struct
     int account = arg->account; int amount = arg->amount;
-    *(int* )accountList->data[account] += amount;
+    *(int* )accountList->data[account] += amount; // increase account balance
     return NULL;
 }
 
-void withdraw(int account, int amount) {
-    if (account < 0 || account > accountList->filled - 1){
-        return;
-    }
-    if (*(int* )accountList->data[account] - amount < 0){
-        return;
-    }
-
-    *(int* )accountList->data[account] -= amount;
-
+int withdraw(int account, int amount) {
+    pthread_t* thread = threadList->data[account];
+    // check if account number is in a valid range
+    if (account < 0 || account > accountList->filled - 1) return -1;
+    // check if withdrawal doesn't leave balance below 0.
+    if (*(int* )accountList->data[account] - amount < 0) return -1;
+    AccountAmount arg = {account, amount}; // create struct to pass as function argument ( in pthread_create() )
+    if (pthread_create(thread, NULL, threadWithdraw, &arg)) threadCreateFail();
+    if (pthread_join(*thread, NULL)) threadJoinFail();
+    return 0;
 }
 
-void printAccount(int account){
-    printf("Account %d: %d\n", account, *(int* )accountList->data[account]);
+void* threadWithdraw(void* voidArg){
+    AccountAmount* arg = voidArg; // typecast voidArg back to struct
+    int account = arg->account; int amount = arg->amount;
+    *(int* )accountList->data[account] -= amount; // increase account balance
+    return NULL;
 }
 
 int getBalance(int account){
-    return *(int*)accountList->data[account];
+    int* balancePtr = mallocInt();
+    pthread_t* thread = threadList->data[account];
+    // check if account number is in a valid range
+    if (account < 0 || account > accountList->filled - 1) return -1;
+    if (pthread_create(thread, NULL, threadGetBalance, &account)) threadCreateFail();
+    if (pthread_join(*thread, (void** )&balancePtr)) threadJoinFail();
+    return *balancePtr;
 }
 
-pthread_t* mallocThread(){
-    pthread_t* threadPtr = malloc(sizeof(pthread_t));
-    if (!threadPtr) memoryFailExit(); // force exit if malloc fails
-    return threadPtr;
+void* threadGetBalance(void* voidArg){
+    int account = *(int* )voidArg;
+    return accountList->data[account];
+}
+
+void threadCreateFail(){
+    printf("Thread create fail!\n");
+    exit(-1);
+}
+
+void threadJoinFail(){
+    printf("Thread create fail!\n");
+    exit(-1);
+}
+
+void programExit(){
+    freeList(&accountList, (void *)freeAccounts);
+    freeList(&threadList, (void* ) freeThreads);
+}
+
+void freeAccounts(int* account){
+    free(account);
+}
+
+void freeThreads(pthread_t* thread){
+    free(thread);
+
 }
