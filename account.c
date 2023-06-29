@@ -77,13 +77,13 @@ void* threadWithdraw(void* voidArg){
 }
 
 int getBalance(int account){
-    int* balancePtr = mallocInt();
+    int* balance;
     pthread_t* thread = threadList->data[account];
     // check if account number is in a valid range
     if (account < 0 || account > accountList->filled - 1) return -1;
     if (pthread_create(thread, NULL, threadGetBalance, &account)) threadCreateFail();
-    if (pthread_join(*thread, (void** )&balancePtr)) threadJoinFail();
-    return *balancePtr;
+    if (pthread_join(*thread, (void** )&balance)) threadJoinFail();
+    return *balance;
 }
 
 void* threadGetBalance(void* voidArg){
@@ -102,8 +102,8 @@ void threadJoinFail(){
 }
 
 void programExit(){
-    freeList(&accountList, (void *)freeAccounts);
-    freeList(&threadList, (void* ) freeThreads);
+    freeList(&accountList, (void* )freeAccounts);
+    freeList(&threadList, (void* )freeThreads);
 }
 
 void freeAccounts(int* account){

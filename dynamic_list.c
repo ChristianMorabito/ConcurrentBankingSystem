@@ -2,9 +2,9 @@
 #include <stdio.h>
 
 void freeList(ListHead** head, void (freeData)(void* data)){
-    int filled = *(int* )(*head)->filled;
+    size_t filled = (*head)->filled;
     for (int i = 0; i < filled; i++){
-        freeData((*head)->data[0]);
+        freeData((*head)->data[i]);
     }
     free((*head)->data);
     free(*head);
@@ -30,7 +30,7 @@ int append(ListHead* head, void* data){
     filled = head->filled;
 
     if ((size - filled) < 1){
-        void* temp = realloc(head->data, sizeof(void*) * (size * 2));
+        void* temp = realloc(head->data, sizeof(void* ) * (size * 2));
         // if reallocation fails, nullify 'filled' point & return -1.
         if (!temp){
             head->data[filled] = NULL;
