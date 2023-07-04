@@ -115,6 +115,5 @@ void freeThreads(pthread_t* thread){
 }
 
 void freeMutexes(pthread_mutex_t* mutex){
-    pthread_mutex_destroy(mutex);
     free(mutex);
 }

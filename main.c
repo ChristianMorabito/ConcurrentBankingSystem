@@ -30,7 +30,7 @@ int main() {
 // TODO: DESTROY MUTEXes pthread_mutex_destroy(&mutex[i])
 
     // Free memory
-//    programExit();
+    programExit();
 
     return 0;
 }
