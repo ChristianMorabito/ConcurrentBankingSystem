@@ -18,11 +18,11 @@ void* threadWithdraw(void* voidArg);
 
 int getBalance(int account);
 
-void* threadGetBalance(void* voidArg);
-
 void* threadDeposit(void* voidArg);
 
-int initialiseThread();
+void initialiseThread(int index);
+
+void initialiseMutex(int index);
 
 void programExit();
 
@@ -30,9 +30,9 @@ void freeAccounts(int* account);
 
 void freeThreads(pthread_t* thread);
 
-void threadCreateFail();
+void freeMutexes(pthread_mutex_t* mutex);
 
-void threadJoinFail();
+void threadCreateFail();
 
 int* mallocInt();
 
