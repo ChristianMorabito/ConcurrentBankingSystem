@@ -1,7 +1,12 @@
 #include <stdio.h>
 #include "account.h"
-#include <unistd.h>
+#include <signal.h>
 
+volatile sig_atomic_t stop;
+
+void catchSIGINT(int num){
+    stop = 1;
+}
 
 int main() {
     // Initialize accounts
@@ -20,14 +25,15 @@ int main() {
     withdraw(account2, 800);
     withdraw(account3, 1200);
 
-    sleep(1);
+    signal(SIGINT, catchSIGINT);
+
+    while (!stop);
 
     // Show balances
     printf("Balance of account 1: %d\n", getBalance(account1));
     printf("Balance of account 2: %d\n", getBalance(account2));
     printf("Balance of account 3: %d\n", getBalance(account3));
 
-// TODO: DESTROY MUTEXes pthread_mutex_destroy(&mutex[i])
 
     // Free memory
     programExit();

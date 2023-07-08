@@ -5,7 +5,8 @@
 
 ListHead* accountList = NULL;
 ListHead* threadList = NULL;
-ListHead* mutexList = NULL;
+//ListHead* mutexList = NULL;
+pthread_mutex_t mutexList[128];
 
 int* mallocInt(){
     int* amount = malloc(sizeof(int)); // create space for account
@@ -18,7 +19,7 @@ void initLists(){
     if (!accountList){
         accountList = createList(); // create account list.
         threadList = createList(); // create thread list.
-        mutexList = createList(); // create mutex list.
+//        mutexList = createList(); // create mutex list.
     }
     if (!accountList) memoryFailExit(); // force exit if malloc fails
 }
@@ -36,8 +37,9 @@ int initialiseAccount(){
 void initialiseMutex(int index){
     pthread_mutex_t* newMutex = malloc(sizeof(pthread_mutex_t));
     if (!newMutex) memoryFailExit();
-    append(mutexList, newMutex);
-    pthread_mutex_init(mutexList->data[index], NULL);
+//    append(mutexList, newMutex);
+//    pthread_mutex_init(mutexList->data[index], NULL);
+    pthread_mutex_init(&mutexList[index], NULL);
 }
 
 void initialiseThread(int index){
@@ -60,9 +62,9 @@ int deposit(int account, int amount){
 void* threadDeposit(void* voidArg){
     AccountAmount* arg = voidArg; // typecast voidArg back to struct
     int account = arg->account; int amount = arg->amount;
-    pthread_mutex_lock((pthread_mutex_t* )&mutexList->data[account]);
+    pthread_mutex_lock(&mutexList[account]);
     *(int* )accountList->data[account] += amount; // increase account balance
-    pthread_mutex_unlock((pthread_mutex_t* )&mutexList->data[account]);
+    pthread_mutex_unlock(&mutexList[account]);
     free(voidArg);
     return NULL;
 }
@@ -80,9 +82,9 @@ int withdraw(int account, int amount) {
 void* threadWithdraw(void* voidArg){
     AccountAmount* arg = voidArg; // typecast voidArg back to struct
     int account = arg->account; int amount = arg->amount;
-    pthread_mutex_lock((pthread_mutex_t* )&mutexList->data[account]);
+    pthread_mutex_lock(&mutexList[account]);
     *(int* )accountList->data[account] -= amount; // increase account balance
-    pthread_mutex_unlock((pthread_mutex_t* )&mutexList->data[account]);
+    pthread_mutex_unlock(&mutexList[account]);
     free(voidArg);
     return NULL;
 }
@@ -102,7 +104,7 @@ void threadCreateFail(){
 void programExit(){
     freeList(&accountList, (void* )freeAccounts);
     freeList(&threadList, (void* )freeThreads);
-    freeList(&mutexList, (void* )freeMutexes);
+//    freeList(&mutexList, (void* )freeMutexes);
 }
 
 void freeAccounts(int* account){
